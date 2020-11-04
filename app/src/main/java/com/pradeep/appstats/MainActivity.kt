@@ -58,24 +58,33 @@ class MainActivity : AppCompatActivity() {
         val mUsageStatsManager: UsageStatsManager =
             getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
 
-        val time = Date().time
+
+        val calendarYear = Calendar.getInstance()
+        calendarYear.add(Calendar.YEAR, -1)
+        val startYear = calendarYear.timeInMillis
+        val end = System.currentTimeMillis()
         val lUsageStatsMapYearly = mUsageStatsManager
-            .queryUsageStats(
-                UsageStatsManager.INTERVAL_YEARLY,
-                time - 1000 * 1000,
-                time
+            .queryAndAggregateUsageStats(
+                startYear,
+                end
             )
 
+        val calendarMonth = Calendar.getInstance()
+        calendarMonth.add(Calendar.MONTH, -1)
+        val startMonth = calendarMonth.timeInMillis
         val lUsageStatsMapMonthly = mUsageStatsManager
             .queryAndAggregateUsageStats(
-                UsageStatsManager.INTERVAL_MONTHLY.toLong(),
-                time - 1000 * 1000
+                startMonth,
+                end
             )
 
+        val calendarDay = Calendar.getInstance()
+        calendarDay.add(Calendar.DAY_OF_MONTH, -1)
+        val startDay = calendarDay.timeInMillis
         val lUsageStatsMapDaily = mUsageStatsManager
             .queryAndAggregateUsageStats(
-                UsageStatsManager.INTERVAL_DAILY.toLong(),
-                time - 1000 * 1000
+                startDay,
+                end
             )
 
         for (i in packs.indices) {
@@ -86,7 +95,7 @@ class MainActivity : AppCompatActivity() {
                 val packages = p.applicationInfo.packageName
 
                 val totalTimeUsageInMillisDaily =
-                    lUsageStatsMapDaily.[packages]?.totalTimeInForeground ?: 0
+                    lUsageStatsMapDaily[packages]?.totalTimeInForeground ?: 0
                 val hmsDaily = millsToHours(totalTimeUsageInMillisDaily)
 
                 val totalTimeUsageInMillisMonthly =
