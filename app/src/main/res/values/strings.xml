@@ -1,4 +1,7 @@
 <resources>
     <string name="app_name">App Stats</string>
     <string name="total_count">Total Installed Apps: %s</string>
+    <string name="yearly">Yearly Usage</string>
+    <string name="monthly">Monthly Usage</string>
+    <string name="daily">Daily Usage</string>
 </resources>

@@ -59,7 +59,20 @@ class MainActivity : AppCompatActivity() {
             getSystemService(USAGE_STATS_SERVICE) as UsageStatsManager
 
         val time = Date().time
-        val lUsageStatsMap = mUsageStatsManager
+        val lUsageStatsMapYearly = mUsageStatsManager
+            .queryUsageStats(
+                UsageStatsManager.INTERVAL_YEARLY,
+                time - 1000 * 1000,
+                time
+            )
+
+        val lUsageStatsMapMonthly = mUsageStatsManager
+            .queryAndAggregateUsageStats(
+                UsageStatsManager.INTERVAL_MONTHLY.toLong(),
+                time - 1000 * 1000
+            )
+
+        val lUsageStatsMapDaily = mUsageStatsManager
             .queryAndAggregateUsageStats(
                 UsageStatsManager.INTERVAL_DAILY.toLong(),
                 time - 1000 * 1000
@@ -71,22 +84,26 @@ class MainActivity : AppCompatActivity() {
                 val appName = p.applicationInfo.loadLabel(packageManager).toString()
                 val icon = p.applicationInfo.loadIcon(packageManager)
                 val packages = p.applicationInfo.packageName
-                val totalTimeUsageInMillis = lUsageStatsMap[packages]?.totalTimeInForeground ?: 0
-                val hms = String.format(
-                    "%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(totalTimeUsageInMillis),
-                    TimeUnit.MILLISECONDS.toMinutes(totalTimeUsageInMillis) - TimeUnit.HOURS.toMinutes(
-                        TimeUnit.MILLISECONDS.toHours(
-                            totalTimeUsageInMillis
-                        )
-                    ),
-                    TimeUnit.MILLISECONDS.toSeconds(totalTimeUsageInMillis) - TimeUnit.MINUTES.toSeconds(
-                        TimeUnit.MILLISECONDS.toMinutes(
-                            totalTimeUsageInMillis
-                        )
-                    )
-                )
 
-                apps.add(AppList(appName, icon, hms))
+                val totalTimeUsageInMillisDaily =
+                    lUsageStatsMapDaily.[packages]?.totalTimeInForeground ?: 0
+                val hmsDaily = millsToHours(totalTimeUsageInMillisDaily)
+
+                val totalTimeUsageInMillisMonthly =
+                    lUsageStatsMapMonthly[packages]?.totalTimeInForeground ?: 0
+                val hmsMonthly = millsToHours(totalTimeUsageInMillisMonthly)
+
+                val totalTimeUsageInMillisYearly =
+                    lUsageStatsMapYearly[packages]?.totalTimeInForeground ?: 0
+                val hmsYearly = millsToHours(totalTimeUsageInMillisYearly)
+
+                val usage ="""
+                     $hmsYearly ${getString(R.string.yearly)}
+                     $hmsMonthly  ${getString(R.string.monthly)}
+                     $hmsDaily ${getString(R.string.daily)}
+                """.trimIndent()
+
+                apps.add(AppList(appName, icon, usage))
             }
         }
         return apps
@@ -116,5 +133,21 @@ class MainActivity : AppCompatActivity() {
         if (resultCode == 1) {
             loadInstalledApps()
         }
+    }
+
+    private fun millsToHours(millis: Long): String {
+        return String.format(
+            "%02d:%02d:%02d", TimeUnit.MILLISECONDS.toHours(millis),
+            TimeUnit.MILLISECONDS.toMinutes(millis) - TimeUnit.HOURS.toMinutes(
+                TimeUnit.MILLISECONDS.toHours(
+                    millis
+                )
+            ),
+            TimeUnit.MILLISECONDS.toSeconds(millis) - TimeUnit.MINUTES.toSeconds(
+                TimeUnit.MILLISECONDS.toMinutes(
+                    millis
+                )
+            )
+        )
     }
 }
