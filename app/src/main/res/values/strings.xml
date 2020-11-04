@@ -1,3 +1,4 @@
 <resources>
     <string name="app_name">App Stats</string>
+    <string name="total_count">Total Installed Apps: %s</string>
 </resources>
